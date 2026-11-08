@@ -66,7 +66,7 @@ Option D (raw `arecord | nc` to Mac, wake word on Mac) remains a one-evening dia
 | Memory | Anthropic **memory tool** (`memory_20250818`, stable, no beta header) backed by a local directory via `BetaLocalFilesystemMemoryTool` | plain files, survives restarts, zero infra | sqlite notes injected into prompt |
 | Web | Anthropic `web_search` + `web_fetch` server tools | no scraper to maintain | `urllib` + trafilatura |
 | TTS | Silero `v5_6_ru` (RU, CC BY-NC, PyTorch CPU) + macOS `say` (EN) | best open Russian prosody | `say -v Milena` for both (only plain Milena installed locally today) |
-| Weather | Open-Meteo (no key, CC-BY) | stdlib `urllib` | wttr.in |
+| Weather | Open-Meteo with explicit models `ecmwf_ifs,ukmo_seamless,icon_seamless,gfs_seamless` (ICON-EU does not cover Kazakhstan; `best_match` = global blend). Yandex Weather API rejected: 7-day trial, business-only ToS. See `docs/research/06-weather-kz.md` | no key, no card, 10 000/day, previous-runs API for self-verification | Visual Crossing (key, no card, ~1 000/day) |
 | Reminders / briefing | `sqlite3` + asyncio loop; launchd plist | stdlib | APScheduler 3 |
 | Telegram | Bot API long polling with `urllib` | stdlib | python-telegram-bot |
 
@@ -96,6 +96,9 @@ Option D (raw `arecord | nc` to Mac, wake word on Mac) remains a one-evening dia
 | Anthropic API | transcribed text, system prompt, tool results, memory files when Claude reads them, web search queries, fetched page text | **no audio** |
 | Anthropic web search backend + fetched sites | queries, URLs | |
 | Open-Meteo | approximate lat/lon | per-IP, no key |
+| Visual Crossing (fallback only) | approximate lat/lon, API key | only when Open-Meteo fails |
+| aviationweather.gov | airport codes only | 14-day accuracy self-check |
+| Cloud STT fallback (opt-in per gate G4; provider TBD when wired, e.g. OpenAI) | **audio** of the utterance | only when local mlx-whisper fails or is too slow; off by default |
 | Telegram | bot chat messages | |
 | Hugging Face / GitHub | one-time model + Pulsar downloads | |
 | Yandex | **while Alice fallback is enabled**: everything in §1. While Pulsar is enabled: DNS/NTP queries and account binding only (A) | OTA blocked by `yandex-noupdate.sh` |

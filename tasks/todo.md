@@ -14,11 +14,11 @@ Secrets, MACs, serials, backups live outside the repo (`~/alice-secrets/`, `~/al
 
 ## Phase 2 — Gate (needs your answers; nothing below starts before this)
 
-- [ ] G1. Brain host: this MacBook (must stay awake, on home LAN) or a home server?
-- [ ] G2. Telegram: new bot via @BotFather (assistant = bot you chat with) or also a user account via MTProto (assistant reads/sends as you, ToS risk)?
-- [ ] G3. Weather provider: Open-Meteo (no key, default) or another?
-- [ ] G4. Audio leaving the device: plan keeps all audio on LAN (local STT). OK, or do you allow a cloud STT (Yandex SpeechKit / OpenAI) as fallback?
-- [ ] G5. Explicit approval to touch the speaker with the steps in Phase 2b–2c.
+- [x] G1. Brain host: **the always-on M4 Pro MacBook** (24 GB; faster mlx-whisper than the M1). The M1 is the spare/second client. Host must have `pmset` sleep disabled on AC and sit on the home LAN with the speaker.
+- [x] G2. Telegram: **Bot API** (new bot via @BotFather; assistant = bot you chat with). No MTProto user session — no ToS/ban risk, stdlib-only.
+- [x] G3. Weather: **Open-Meteo with explicit models** (`models=ecmwf_ifs,ukmo_seamless,icon_seamless,gfs_seamless`; ICON-EU does not cover Kazakhstan, so `best_match` is just the global blend). Fallback **Visual Crossing** (key, no card). Yandex Weather API rejected: 7-day trial only, business-only ToS. Accuracy unknown for KZ → M1.3 also logs forecasts vs METAR (UAAA/UACC) for a 14-day self-check. Details: `docs/research/06-weather-kz.md`.
+- [x] G4. Audio: local STT (mlx-whisper) primary; **cloud STT fallback allowed** (opt-in per call; added to privacy list when wired).
+- [x] G5. Approved 2026-11-08. Device steps may start; the user continues from another device (see `README.md` → "Continue on another device").
 
 ## Phase 2a — Mac prep (safe, no device)
 
@@ -27,7 +27,7 @@ Secrets, MACs, serials, backups live outside the repo (`~/alice-secrets/`, `~/al
 - [ ] P3. Set up the custom update server (eQuasar, Docker + nginx) per guide, with `aaa-certificate-services.pem` from `yandex-station-binaries`. Check: `curl -k https://<mac-ip>/check_updates` answers; cert chain ends at AAA.
 - [ ] P4. Decide DNS redirect method (router override vs Mac hotspot). Check: from a phone on that network, `nslookup quasar.yandex.net` returns the Mac IP; note the exact rollback command in `docs/device-procedure.md`.
 - [ ] P5. Download Pulsar v0.6.0 `pulsar-armhf.bin` + `satellite/deploy/{ctl.sh,boot.sh,supervise.sh}` from https://github.com/Morvex885/pulsar/releases into `~/alice-secrets/pulsar/`. Check: `shasum -a 256` matches the release asset digest; file is ~4.2 MB.
-- [ ] P6. Python env: `.venv` (3.12) exists. Install `anthropic aioesphomeapi mlx-whisper`. Check: `.venv/bin/python -c "import anthropic, aioesphomeapi, mlx_whisper"` exits 0.
+- [x] P6. Python env: `.venv` (3.12 via uv) + `requirements.txt` (`anthropic aioesphomeapi mlx-whisper`). Check passed 2026-11-08 on the M4 Pro: `.venv/bin/python -c "import anthropic, aioesphomeapi, mlx_whisper"` exits 0 (anthropic 2.6.0, aioesphomeapi 46.28.0, mlx-whisper 0.4.3).
 - [ ] P7. `ANTHROPIC_API_KEY` in `~/alice-secrets/env` (chmod 600), loaded by `source`, never in repo. Check: `.venv/bin/python -c "import anthropic; print(anthropic.Anthropic().models.list().data[0].id)"` prints a model id.
 
 ## Phase 2b — Device: verify, root, back up (first write to `system` happens at D4)
@@ -59,7 +59,7 @@ Abort rule at every step: any output that differs from the guide's expected valu
 ### M1 — voice → Mac → Claude → voice, one scenario "what's the weather"
 - [ ] M1.1 `server/pulsar_client.py`: `aioesphomeapi` connect (Noise key from `ctl.sh api-key`), `subscribe_voice_assistant`, buffer PCM until stop, write WAV. Check: `tests/check_m1_capture.py` → after saying «Алиса, какая погода», a WAV >1 s exists.
 - [ ] M1.2 `server/stt.py`: mlx-whisper transcribe. Check: `.venv/bin/python server/stt.py sample.wav` prints Russian text containing «погода».
-- [ ] M1.3 `server/weather.py`: Open-Meteo via `urllib`, lat/lon from env. Check: `python server/weather.py` prints today's temp.
+- [ ] M1.3 `server/weather.py`: Open-Meteo via `urllib`, lat/lon from env, `models=ecmwf_ifs,ukmo_seamless,icon_seamless,gfs_seamless`, answer from `ecmwf_ifs`, spread as confidence. Appends forecast + nearest METAR (UAAA/UACC from aviationweather.gov) to `~/alice-data/weather_log.sqlite` for the 14-day accuracy check. Check: `python server/weather.py` prints today's temp and the model spread.
 - [ ] M1.4 `server/brain.py`: Messages API, `claude-haiku-5-5`, `weather` tool. Check: `python server/brain.py "какая погода"` prints an answer with a temperature.
 - [ ] M1.5 `server/tts.py`: `say -v Milena` → WAV (Silero later). Check: file plays on the Mac.
 - [ ] M1.6 LAN HTTP file server on the Mac (stdlib `http.server`, bound to LAN IP) + Pulsar events `RUN_START → STT_* → TTS_START/TTS_END(url) → RUN_END`. **Check (milestone gate):** `tests/check_m1.py` runs the loop end to end; speaker says the weather; `docs/m1-log.md` records what was verified.
