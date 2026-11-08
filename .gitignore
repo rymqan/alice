@@ -1,0 +1,11 @@
+.venv/
+.env
+*.key
+*.pem
+secrets/
+firmware/
+*.img
+*.bin
+__pycache__/
+*.sqlite3
+memory/
