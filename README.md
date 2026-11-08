@@ -12,7 +12,7 @@ Secrets, device identifiers, firmware dumps: `~/alice-secrets/`, `~/alice-backup
 ## Setup on any Mac
 
 ```bash
-git clone <your-private-remote> ~/Projects/alice && cd ~/Projects/alice
+git clone https://github.com/rymqan/alice.git ~/Projects/alice && cd ~/Projects/alice
 uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.txt
 .venv/bin/python -c "import anthropic, aioesphomeapi, mlx_whisper"   # must exit 0
 ```
@@ -21,10 +21,10 @@ uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requi
 
 The project state is in the repo files (`README.md`, `docs/`, `tasks/todo.md`). The conversation itself is a local JSONL transcript on the owner's Mac. Two levels of hand-off:
 
-**Level 1 — repo only (always do this).** Push to a private remote; the other developer clones it and starts a fresh session:
+**Level 1 — repo only (always do this).** The repo is at https://github.com/rymqan/alice (public). The other developer clones it and starts a fresh session:
 
 ```bash
-git clone <private-remote> ~/Projects/alice && cd ~/Projects/alice
+git clone https://github.com/rymqan/alice.git ~/Projects/alice && cd ~/Projects/alice
 uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.txt
 claude
 ```
