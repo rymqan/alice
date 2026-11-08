@@ -9,3 +9,4 @@ firmware/
 __pycache__/
 *.sqlite3
 memory/
+handoff/
